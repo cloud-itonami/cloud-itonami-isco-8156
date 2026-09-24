@@ -1,0 +1,34 @@
+;; What this vertical's robot physically does, declared for
+;; kotoba.robotics.process (kotoba-lang/robotics). `kbb -M:physics` runs it.
+;;
+;; README "Robotics premise": a plant scheduling/logistics coordination robot
+;; does crew scheduling, production/inventory logging and leather, sole and
+;; adhesive supply for a shoemaking machine-operator crew; it never runs the
+;; presses, cutting dies or lasting machines. Its physical work is materials
+;; logistics: loading stacks of soles into a press-room feed rack, and
+;; carrying the materials cart from the store to the cutting room.
+;;
+;; Every number without a cited source is marked `estimate` in its :basis.
+;; Replacing an estimate with a sourced value is this bot's growth work.
+{:physics/schema "itonami.physical-ai.spec.v1"
+ :repo "cloud-itonami/cloud-itonami-isco-8156"
+ :cases
+ [{:id :sole-stack-to-feed-rack
+   :kind :manipulator
+   :procedure "arm lifts a stack of rubber soles from the delivery tote onto the upper shelf of the sole-press feed rack"
+   :params {:l1-m 0.45 :l2-m 0.40 :m1-kg 3.5 :m2-kg 2.5
+            :from [0.55 0.05] :to [0.25 0.65] :duration-s 2.0 :steps 400}
+   :sweep {:param :payload-kg :values [1.0 2.0 3.0 4.0 5.0 6.0]}
+   :quantity :peak-tau1-nm
+   :limit {:max 60.0 :basis "estimate: continuous shoulder torque of a light collaborative arm (~5 kg class)"}
+   :boundary {:lo 0.1 :hi 20.0}}
+  {:id :materials-cart-to-cutting-room
+   :kind :transport
+   :procedure "AMR carries a cart of leather sides and adhesive tins from the materials store to the cutting room"
+   :params {:mass-kg 60.0 :payload-kg 60.0 :distance-m 60.0 :a-max-mps2 0.5
+            :brake-decel-mps2 0.8 :drive-force-n 250.0 :crr 0.02
+            :cog-height-m 0.55 :support-half-length-m 0.30 :max-time-s 1200.0}
+   :sweep {:param :v-max-mps :values [0.5 0.8 1.0 1.2 1.5]}
+   :quantity :cycle-time-s
+   :limit {:max 90.0 :basis "estimate: a materials run must fit inside the ~1.5 min gap between clicker-press cutting batches"}
+   :boundary {:lo 0.3 :hi 2.0}}]}
